@@ -29,12 +29,58 @@ class PostsAdapter(val posts: MutableList<Post>) : RecyclerView.Adapter<PostsAda
         val title: TextView = holder.itemView.findViewById(R.id.post_title_textView)
         val content: TextView = holder.itemView.findViewById(R.id.post_content_textView)
         val removeImage: ImageView = holder.itemView.findViewById(R.id.remove_imageView)
+        val followImage: ImageView = holder.itemView.findViewById(R.id.item_follow_imageView)
+        var doesExist = false
+        val docRef = db.collection("follows").document(auth.currentUser!!.uid+":"+posts[position].id)
+        docRef.get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    Log.d(TAG, "DocumentSnapshot data: ${document.data}")
+                    followImage.setImageResource(R.drawable.baseline_favorite_24)
+                    doesExist = true
+                } else {
+                    Log.d(TAG, "No such document")
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.d(TAG, "get failed with ", exception)
+            }
 
         title.text = posts[position].title
         content.text = posts[position].content
 
         if(auth.currentUser!!.uid != posts[position].uid) {
             removeImage.isVisible = false
+        }
+        followImage.setOnClickListener {
+
+            if(!doesExist) {
+                val follow = hashMapOf(
+                    "uid" to auth.currentUser!!.uid,
+                    "pid" to posts[position].id
+                )
+
+                db.collection("follows").document(auth.currentUser!!.uid+":"+posts[position].id)
+                    .set(follow)
+                    .addOnSuccessListener { documentReference ->
+                        Log.d("TAG", "DocumentSnapshot written with ID:")
+                        followImage.setImageResource(R.drawable.baseline_favorite_24)
+                        doesExist = true
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w("TAG", "Error adding document", e)
+                    }
+            }
+            else {
+                db.collection("follows").document(auth.currentUser!!.uid+":"+posts[position].id)
+                    .delete()
+                    .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully deleted!")
+                        followImage.setImageResource(R.drawable.baseline_favorite_border_24)
+                        doesExist = false
+                    }
+                    .addOnFailureListener { e -> Log.w(TAG, "Error deleting document", e) }
+            }
+
         }
         removeImage.setOnClickListener {
             db.collection("posts").document(posts[position].id)
