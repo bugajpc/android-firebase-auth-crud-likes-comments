@@ -18,7 +18,6 @@ class PostsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_posts)
 
-
         val db = Firebase.firestore
         val postsAdapter = PostsAdapter(posts)
         val postsRecyclerView: RecyclerView = findViewById(R.id.postsRecyclerView)

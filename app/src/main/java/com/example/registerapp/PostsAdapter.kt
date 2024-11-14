@@ -1,6 +1,7 @@
 package com.example.registerapp
 
 import android.content.ContentValues.TAG
+import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -89,6 +90,14 @@ class PostsAdapter(val posts: MutableList<Post>) : RecyclerView.Adapter<PostsAda
                     notifyDataSetChanged()
                 }
                 .addOnFailureListener { e -> Log.w(TAG, "Error deleting document", e) }
+        }
+        holder.itemView.setOnClickListener {
+            val singlePostIntent = Intent(it.context, SinglePostActivity::class.java)
+            singlePostIntent.putExtra("title", posts[position].title)
+            singlePostIntent.putExtra("content", posts[position].content)
+            singlePostIntent.putExtra("pid", posts[position].id)
+            singlePostIntent.putExtra("uid", posts[position].uid)
+            it.context.startActivity(singlePostIntent)
         }
     }
 
